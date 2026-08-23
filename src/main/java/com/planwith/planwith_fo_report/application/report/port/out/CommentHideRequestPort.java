@@ -4,5 +4,5 @@ import java.util.UUID;
 
 public interface CommentHideRequestPort {
 
-	void requestHide(UUID commentUuid, UUID commentReportUuid, long reportCount);
+	void requestHide(UUID commentUuid, long reportCount, int threshold);
 }

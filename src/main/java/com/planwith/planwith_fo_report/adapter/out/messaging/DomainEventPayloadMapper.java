@@ -2,6 +2,7 @@ package com.planwith.planwith_fo_report.adapter.out.messaging;
 
 import java.util.UUID;
 
+import com.planwith.planwith_fo_report.domain.report.event.CommentReportThresholdReachedEvent;
 import com.planwith.planwith_fo_report.domain.report.event.DomainEvent;
 import com.planwith.planwith_fo_report.domain.report.event.ModerationActionRequired;
 import com.planwith.planwith_fo_report.domain.report.event.ReportCreated;
@@ -51,6 +52,25 @@ final class DomainEventPayloadMapper {
 					reviewed.reviewerUuid(),
 					toJsonString(reviewed.reviewComment()),
 					reviewed.occurredAt()
+			));
+		}
+		if (event instanceof CommentReportThresholdReachedEvent thresholdReached) {
+			return compact("""
+					{
+					  "eventType":"%s",
+					  "eventUuid":"%s",
+					  "commentUuid":"%s",
+					  "reportCount":%d,
+					  "threshold":%d,
+					  "occurredAt":"%s"
+					}
+					""".formatted(
+					thresholdReached.eventType(),
+					thresholdReached.eventUuid(),
+					thresholdReached.commentUuid(),
+					thresholdReached.reportCount(),
+					thresholdReached.threshold(),
+					thresholdReached.occurredAt()
 			));
 		}
 		if (event instanceof ModerationActionRequired required) {
