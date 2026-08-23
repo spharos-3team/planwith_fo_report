@@ -3,7 +3,6 @@ package com.planwith.planwith_fo_report.adapter.out.comment;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -45,7 +44,7 @@ class HttpCommentReportContextAdapter implements CommentReportContextPort {
 			CommentReportContextResponse response = restClient.get()
 					.uri(commentServiceProperties.reportContextPath(), commentUuid)
 					.retrieve()
-					.onStatus(HttpStatusCode::is4xxClientError, (request, httpResponse) -> {
+					.onStatus(statusCode -> statusCode != null && statusCode.is4xxClientError(), (request, httpResponse) -> {
 						if (httpResponse.getStatusCode().value() == 404) {
 							throw new CommentContextNotFoundException();
 						}
@@ -89,5 +88,6 @@ class HttpCommentReportContextAdapter implements CommentReportContextPort {
 	}
 
 	private static class CommentContextNotFoundException extends RuntimeException {
+		private static final long serialVersionUID = 1L;
 	}
 }

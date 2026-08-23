@@ -59,14 +59,14 @@ class StoryCommentReportPersistenceAdapter implements StoryCommentReportReposito
 	@Transactional(readOnly = true)
 	public Optional<StoryCommentReport> findByCommentReportId(Long commentReportId) {
 		return storyCommentReportJpaRepository.findById(commentReportId)
-				.map(StoryCommentReportJpaEntity::toDomain);
+				.map(entity -> entity.toDomain());
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public Optional<StoryCommentReport> findByCommentReportUuid(UUID commentReportUuid) {
 		return storyCommentReportJpaRepository.findByCommentReportUuid(commentReportUuid.toString())
-				.map(StoryCommentReportJpaEntity::toDomain);
+				.map(entity -> entity.toDomain());
 	}
 
 	@Override

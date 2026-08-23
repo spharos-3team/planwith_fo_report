@@ -2,7 +2,6 @@ package com.planwith.planwith_fo_report.adapter.in.web;
 
 import java.time.Instant;
 
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -100,7 +99,10 @@ public class GlobalExceptionHandler {
 				.getFieldErrors()
 				.stream()
 				.findFirst()
-				.map(DefaultMessageSourceResolvable::getDefaultMessage)
+				.map(fieldError -> {
+					String defaultMessage = fieldError.getDefaultMessage();
+					return defaultMessage != null ? defaultMessage : "요청값이 올바르지 않습니다.";
+				})
 				.orElse("요청값이 올바르지 않습니다.");
 
 		return createErrorResponse(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", message);
