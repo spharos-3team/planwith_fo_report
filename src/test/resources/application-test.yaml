@@ -37,3 +37,6 @@ app:
     marker: planwith-fo-report-deploy-v1
   gateway:
     public-url: /
+  comment-service:
+    base-url: http://localhost:8099
+    report-context-path: /internal/comments/{commentUuid}/report-context
