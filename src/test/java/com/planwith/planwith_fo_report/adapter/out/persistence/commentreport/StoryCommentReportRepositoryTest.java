@@ -1,6 +1,7 @@
 package com.planwith.planwith_fo_report.adapter.out.persistence.commentreport;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.UUID;
 
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.planwith.planwith_fo_report.application.report.port.out.StoryCommentReportRepository;
 import com.planwith.planwith_fo_report.domain.report.ReportType;
 import com.planwith.planwith_fo_report.domain.report.StoryCommentReport;
+import com.planwith.planwith_fo_report.domain.report.exception.DuplicateReportException;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -68,5 +70,32 @@ class StoryCommentReportRepositoryTest {
 				UUID.fromString("33333333-3333-3333-3333-333333333333"),
 				MEMBER_UUID
 		)).isFalse();
+	}
+
+	@Test
+	void uniqueConstraintRejectsSameMemberAndComment() {
+		storyCommentReportRepository.save(
+				StoryCommentReport.create(COMMENT_UUID, MEMBER_UUID, ReportType.SPAM)
+		);
+
+		assertThatThrownBy(() -> storyCommentReportRepository.save(
+				StoryCommentReport.create(COMMENT_UUID, MEMBER_UUID, ReportType.HATE)
+		)).isInstanceOf(DuplicateReportException.class);
+	}
+
+	@Test
+	void allowsSameCommentFromDifferentMembers() {
+		UUID otherMemberUuid = UUID.fromString("44444444-4444-4444-4444-444444444444");
+
+		storyCommentReportRepository.save(
+				StoryCommentReport.create(COMMENT_UUID, MEMBER_UUID, ReportType.SPAM)
+		);
+		StoryCommentReport otherMemberReport = storyCommentReportRepository.save(
+				StoryCommentReport.create(COMMENT_UUID, otherMemberUuid, ReportType.HATE)
+		);
+
+		assertThat(otherMemberReport.getCommentReportId()).isNotNull();
+		assertThat(storyCommentReportRepository.existsByCommentUuidAndMemberUuid(COMMENT_UUID, MEMBER_UUID)).isTrue();
+		assertThat(storyCommentReportRepository.existsByCommentUuidAndMemberUuid(COMMENT_UUID, otherMemberUuid)).isTrue();
 	}
 }

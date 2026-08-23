@@ -92,6 +92,30 @@ class CommentReportCommandControllerIntegrationTests {
 	}
 
 	@Test
+	void allowsSameCommentFromDifferentMembers() throws Exception {
+		UUID otherMemberUuid = UUID.fromString("44444444-4444-4444-4444-444444444444");
+		given(commentReportContextPort.findByCommentUuid(COMMENT_UUID))
+				.willReturn(Optional.of(CommentReportContext.of(COMMENT_UUID, AUTHOR_UUID, true)));
+		storyCommentReportRepository.save(
+				StoryCommentReport.create(COMMENT_UUID, MEMBER_UUID, ReportType.SPAM)
+		);
+
+		mockMvc.perform(post("/api/planwith-fo-report/reports/comments/" + COMMENT_UUID)
+						.header("X-Member-Uuid", otherMemberUuid)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "reportType": "HATE"
+								}
+								"""))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.message").value("댓글을 신고했다"));
+
+		assertThat(storyCommentReportRepository.existsByCommentUuidAndMemberUuid(COMMENT_UUID, MEMBER_UUID)).isTrue();
+		assertThat(storyCommentReportRepository.existsByCommentUuidAndMemberUuid(COMMENT_UUID, otherMemberUuid)).isTrue();
+	}
+
+	@Test
 	void rejectsDuplicateCommentReport() throws Exception {
 		given(commentReportContextPort.findByCommentUuid(COMMENT_UUID))
 				.willReturn(Optional.of(CommentReportContext.of(COMMENT_UUID, AUTHOR_UUID, true)));

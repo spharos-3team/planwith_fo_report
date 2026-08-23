@@ -35,9 +35,24 @@ class StoryCommentReportPersistenceAdapter implements StoryCommentReportReposito
 			);
 			return saved.toDomain();
 		} catch (DataIntegrityViolationException exception) {
-			log.warn("StoryCommentReportPersistenceAdapter : save : 댓글 신고 고유 제약 위반");
-			throw new DuplicateReportException();
+			if (isMemberCommentUniqueViolation(exception)) {
+				log.warn("StoryCommentReportPersistenceAdapter : save : 댓글 신고 UNIQUE 제약 위반 - uk_comment_report_member");
+				throw new DuplicateReportException();
+			}
+			throw exception;
 		}
+	}
+
+	private static boolean isMemberCommentUniqueViolation(DataIntegrityViolationException exception) {
+		Throwable current = exception;
+		while (current != null) {
+			String message = current.getMessage();
+			if (message != null && message.toLowerCase().contains(StoryCommentReportJpaEntity.MEMBER_COMMENT_UNIQUE)) {
+				return true;
+			}
+			current = current.getCause();
+		}
+		return false;
 	}
 
 	@Override

@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 		name = "story_comment_report",
 		uniqueConstraints = {
 				@UniqueConstraint(
-						name = "uk_comment_report_member",
+						name = StoryCommentReportJpaEntity.MEMBER_COMMENT_UNIQUE,
 						columnNames = {"comment_uuid", "member_uuid"}
 				)
 		},
@@ -36,6 +36,8 @@ import lombok.NoArgsConstructor;
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 class StoryCommentReportJpaEntity {
+
+	static final String MEMBER_COMMENT_UNIQUE = "uk_comment_report_member";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -37,6 +38,9 @@ class CreateCommentReportServiceTest {
 	private ValidateCommentReportInputUseCase validateCommentReportInputUseCase;
 
 	@Mock
+	private DuplicateCommentReportGuard duplicateCommentReportGuard;
+
+	@Mock
 	private StoryCommentReportRepository storyCommentReportRepository;
 
 	private CreateCommentReportService createCommentReportService;
@@ -45,6 +49,7 @@ class CreateCommentReportServiceTest {
 	void setUp() {
 		createCommentReportService = new CreateCommentReportService(
 				validateCommentReportInputUseCase,
+				duplicateCommentReportGuard,
 				storyCommentReportRepository
 		);
 	}
@@ -64,8 +69,6 @@ class CreateCommentReportServiceTest {
 						AUTHOR_UUID,
 						true
 				));
-		given(storyCommentReportRepository.existsByCommentUuidAndMemberUuid(COMMENT_UUID, MEMBER_UUID))
-				.willReturn(false);
 		given(storyCommentReportRepository.save(any(StoryCommentReport.class)))
 				.willAnswer(invocation -> invocation.getArgument(0));
 
@@ -76,6 +79,7 @@ class CreateCommentReportServiceTest {
 		assertThat(result.commentReportUuid()).isNotNull();
 		assertThat(result.createdAt()).isNotNull();
 
+		verify(duplicateCommentReportGuard).assertNotDuplicated(COMMENT_UUID, MEMBER_UUID);
 		ArgumentCaptor<StoryCommentReport> captor = ArgumentCaptor.forClass(StoryCommentReport.class);
 		verify(storyCommentReportRepository).save(captor.capture());
 		assertThat(captor.getValue().getCommentUuid()).isEqualTo(COMMENT_UUID);
@@ -98,12 +102,14 @@ class CreateCommentReportServiceTest {
 						AUTHOR_UUID,
 						true
 				));
-		given(storyCommentReportRepository.existsByCommentUuidAndMemberUuid(COMMENT_UUID, MEMBER_UUID))
-				.willReturn(true);
+		willThrow(new DuplicateReportException())
+				.given(duplicateCommentReportGuard)
+				.assertNotDuplicated(COMMENT_UUID, MEMBER_UUID);
 
 		assertThatThrownBy(() -> createCommentReportService.create(command))
 				.isInstanceOf(DuplicateReportException.class);
 
+		verify(duplicateCommentReportGuard).assertNotDuplicated(COMMENT_UUID, MEMBER_UUID);
 		verify(storyCommentReportRepository, never()).save(any());
 	}
 
@@ -120,7 +126,7 @@ class CreateCommentReportServiceTest {
 		assertThatThrownBy(() -> createCommentReportService.create(command))
 				.isInstanceOf(InvalidReportException.class);
 
-		verify(storyCommentReportRepository, never()).existsByCommentUuidAndMemberUuid(any(), any());
+		verify(duplicateCommentReportGuard, never()).assertNotDuplicated(any(), any());
 		verify(storyCommentReportRepository, never()).save(any());
 	}
 }

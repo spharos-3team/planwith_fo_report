@@ -10,7 +10,6 @@ import com.planwith.planwith_fo_report.application.report.port.out.StoryCommentR
 import com.planwith.planwith_fo_report.application.report.result.CommentReportInputResult;
 import com.planwith.planwith_fo_report.application.report.result.CreateCommentReportResult;
 import com.planwith.planwith_fo_report.domain.report.StoryCommentReport;
-import com.planwith.planwith_fo_report.domain.report.exception.DuplicateReportException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CreateCommentReportService implements CreateCommentReportUseCase {
 
 	private final ValidateCommentReportInputUseCase validateCommentReportInputUseCase;
+	private final DuplicateCommentReportGuard duplicateCommentReportGuard;
 	private final StoryCommentReportRepository storyCommentReportRepository;
 
 	@Override
@@ -29,18 +29,7 @@ public class CreateCommentReportService implements CreateCommentReportUseCase {
 		log.info("CreateCommentReportService : create : 댓글 신고 생성 비즈니스 로직 시작");
 
 		CommentReportInputResult validated = validateCommentReportInputUseCase.validate(command);
-
-		if (storyCommentReportRepository.existsByCommentUuidAndMemberUuid(
-				validated.commentUuid(),
-				validated.memberUuid()
-		)) {
-			log.warn(
-					"CreateCommentReportService : create : 중복 댓글 신고 요청 - commentUuid={}, memberUuid={}",
-					validated.commentUuid(),
-					validated.memberUuid()
-			);
-			throw new DuplicateReportException();
-		}
+		duplicateCommentReportGuard.assertNotDuplicated(validated.commentUuid(), validated.memberUuid());
 
 		StoryCommentReport saved = storyCommentReportRepository.save(
 				StoryCommentReport.create(
