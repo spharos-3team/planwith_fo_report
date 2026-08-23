@@ -101,6 +101,6 @@ class CommentReportTargetControllerIntegrationTests {
 								}
 								"""))
 				.andExpect(status().isForbidden())
-				.andExpect(jsonPath("$.code").value("SELF_COMMENT_REPORT"));
+				.andExpect(jsonPath("$.code").value("SELF_REPORT_NOT_ALLOWED"));
 	}
 }

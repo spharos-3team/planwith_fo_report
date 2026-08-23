@@ -52,10 +52,9 @@ class CommentReportThresholdHandlerTest {
 	}
 
 	@Test
-	void stillRequestsHideWhenCountExceedsThreshold() {
-		boolean reached = commentReportThresholdHandler.handle(COMMENT_UUID, COMMENT_REPORT_UUID, 4L);
+	void doesNotRequestHideWhenCountExceedsThreshold() {
+		assertThat(commentReportThresholdHandler.handle(COMMENT_UUID, COMMENT_REPORT_UUID, 4L)).isFalse();
 
-		assertThat(reached).isTrue();
-		verify(commentHideRequestPort).requestHide(COMMENT_UUID, 4L, 3);
+		verify(commentHideRequestPort, never()).requestHide(COMMENT_UUID, 4L, 3);
 	}
 }

@@ -17,7 +17,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 
 import com.planwith.planwith_fo_report.domain.report.ReportType;
 import com.planwith.planwith_fo_report.domain.report.StoryCommentReport;
-import com.planwith.planwith_fo_report.domain.report.exception.DuplicateReportException;
+import com.planwith.planwith_fo_report.domain.report.exception.DuplicateCommentReportException;
 
 @ExtendWith(MockitoExtension.class)
 class StoryCommentReportPersistenceAdapterTest {
@@ -44,7 +44,7 @@ class StoryCommentReportPersistenceAdapterTest {
 
 		assertThatThrownBy(() -> storyCommentReportPersistenceAdapter.save(
 				StoryCommentReport.create(COMMENT_UUID, MEMBER_UUID, ReportType.SPAM)
-		)).isInstanceOf(DuplicateReportException.class);
+		)).isInstanceOf(DuplicateCommentReportException.class);
 	}
 
 	@Test
