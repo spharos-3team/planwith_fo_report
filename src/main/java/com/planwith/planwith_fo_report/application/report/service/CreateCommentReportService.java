@@ -25,6 +25,7 @@ public class CreateCommentReportService implements CreateCommentReportUseCase {
 	private final DuplicateCommentReportGuard duplicateCommentReportGuard;
 	private final StoryCommentReportRepository storyCommentReportRepository;
 	private final CountCommentReportsUseCase countCommentReportsUseCase;
+	private final CommentReportThresholdHandler commentReportThresholdHandler;
 
 	@Override
 	@Transactional
@@ -42,13 +43,19 @@ public class CreateCommentReportService implements CreateCommentReportUseCase {
 				)
 		);
 		CommentReportCountResult count = countCommentReportsUseCase.count(saved.getCommentUuid());
-
-		log.info(
-				"CreateCommentReportService : create : 댓글 신고 생성 완료 - commentReportUuid={}, commentUuid={}, reportCount={}",
-				saved.getCommentReportUuid(),
+		boolean thresholdReached = commentReportThresholdHandler.handle(
 				saved.getCommentUuid(),
+				saved.getCommentReportUuid(),
 				count.reportCount()
 		);
-		return CreateCommentReportResult.from(saved, count.reportCount());
+
+		log.info(
+				"CreateCommentReportService : create : 댓글 신고 생성 완료 - commentReportUuid={}, commentUuid={}, reportCount={}, thresholdReached={}",
+				saved.getCommentReportUuid(),
+				saved.getCommentUuid(),
+				count.reportCount(),
+				thresholdReached
+		);
+		return CreateCommentReportResult.from(saved, count.reportCount(), thresholdReached);
 	}
 }

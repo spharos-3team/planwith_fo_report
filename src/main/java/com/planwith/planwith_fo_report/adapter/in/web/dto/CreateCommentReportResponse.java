@@ -15,6 +15,7 @@ public record CreateCommentReportResponse(
 		ReportType reportType,
 		Instant createdAt,
 		long reportCount,
+		boolean thresholdReached,
 		String message
 ) {
 
@@ -27,6 +28,7 @@ public record CreateCommentReportResponse(
 				result.reportType(),
 				result.createdAt(),
 				result.reportCount(),
+				result.thresholdReached(),
 				SUCCESS_MESSAGE
 		);
 	}

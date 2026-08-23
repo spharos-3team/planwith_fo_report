@@ -80,3 +80,5 @@ app:
   comment-service:
     base-url: ${COMMENT_SERVICE_BASE_URL:http://planwith-fo-comment}
     report-context-path: ${COMMENT_SERVICE_REPORT_CONTEXT_PATH:/internal/comments/{commentUuid}/report-context}
+  comment-report:
+    hide-threshold: ${COMMENT_REPORT_HIDE_THRESHOLD:3}

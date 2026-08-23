@@ -19,6 +19,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.planwith.planwith_fo_report.adapter.out.persistence.outbox.OutboxEventJpaRepository;
 import com.planwith.planwith_fo_report.application.report.port.out.CommentReportContextPort;
 import com.planwith.planwith_fo_report.application.report.port.out.StoryCommentReportRepository;
 import com.planwith.planwith_fo_report.domain.report.CommentReportContext;
@@ -40,6 +41,9 @@ class CommentReportCommandControllerIntegrationTests {
 
 	@Autowired
 	private StoryCommentReportRepository storyCommentReportRepository;
+
+	@Autowired
+	private OutboxEventJpaRepository outboxEventJpaRepository;
 
 	@MockitoBean
 	private CommentReportContextPort commentReportContextPort;
@@ -63,6 +67,7 @@ class CommentReportCommandControllerIntegrationTests {
 				.andExpect(jsonPath("$.reportType").value("HATE"))
 				.andExpect(jsonPath("$.createdAt").isNotEmpty())
 				.andExpect(jsonPath("$.reportCount").value(1))
+				.andExpect(jsonPath("$.thresholdReached").value(false))
 				.andExpect(jsonPath("$.message").value("댓글을 신고했다"));
 
 		assertThat(storyCommentReportRepository.existsByCommentUuidAndMemberUuid(COMMENT_UUID, MEMBER_UUID)).isTrue();
@@ -111,7 +116,8 @@ class CommentReportCommandControllerIntegrationTests {
 								"""))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.message").value("댓글을 신고했다"))
-				.andExpect(jsonPath("$.reportCount").value(2));
+				.andExpect(jsonPath("$.reportCount").value(2))
+				.andExpect(jsonPath("$.thresholdReached").value(false));
 
 		assertThat(storyCommentReportRepository.existsByCommentUuidAndMemberUuid(COMMENT_UUID, MEMBER_UUID)).isTrue();
 		assertThat(storyCommentReportRepository.existsByCommentUuidAndMemberUuid(COMMENT_UUID, otherMemberUuid)).isTrue();
@@ -135,5 +141,63 @@ class CommentReportCommandControllerIntegrationTests {
 								"""))
 				.andExpect(status().isConflict())
 				.andExpect(jsonPath("$.code").value("DUPLICATE_REPORT"));
+	}
+
+	@Test
+	void requestsHideWhenThirdReportReachesThreshold() throws Exception {
+		UUID memberB = UUID.fromString("44444444-4444-4444-4444-444444444444");
+		UUID memberC = UUID.fromString("66666666-6666-6666-6666-666666666666");
+		given(commentReportContextPort.findByCommentUuid(COMMENT_UUID))
+				.willReturn(Optional.of(CommentReportContext.of(COMMENT_UUID, AUTHOR_UUID, true)));
+		storyCommentReportRepository.save(StoryCommentReport.create(COMMENT_UUID, MEMBER_UUID, ReportType.SPAM));
+		storyCommentReportRepository.save(StoryCommentReport.create(COMMENT_UUID, memberB, ReportType.HATE));
+
+		mockMvc.perform(post("/api/planwith-fo-report/reports/comments/" + COMMENT_UUID)
+						.header("X-Member-Uuid", memberC)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "reportType": "ABUSE"
+								}
+								"""))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.reportCount").value(3))
+				.andExpect(jsonPath("$.thresholdReached").value(true))
+				.andExpect(jsonPath("$.message").value("댓글을 신고했다"));
+
+		assertThat(storyCommentReportRepository.countByCommentUuid(COMMENT_UUID)).isEqualTo(3L);
+		assertThat(outboxEventJpaRepository.findAll())
+				.hasSize(1)
+				.first()
+				.extracting("eventType")
+				.isEqualTo("ModerationActionRequired");
+	}
+
+	@Test
+	void stillAcceptsReportAfterThreshold() throws Exception {
+		UUID memberB = UUID.fromString("44444444-4444-4444-4444-444444444444");
+		UUID memberC = UUID.fromString("66666666-6666-6666-6666-666666666666");
+		UUID memberD = UUID.fromString("77777777-7777-7777-7777-777777777777");
+		given(commentReportContextPort.findByCommentUuid(COMMENT_UUID))
+				.willReturn(Optional.of(CommentReportContext.of(COMMENT_UUID, AUTHOR_UUID, true)));
+		storyCommentReportRepository.save(StoryCommentReport.create(COMMENT_UUID, MEMBER_UUID, ReportType.SPAM));
+		storyCommentReportRepository.save(StoryCommentReport.create(COMMENT_UUID, memberB, ReportType.HATE));
+		storyCommentReportRepository.save(StoryCommentReport.create(COMMENT_UUID, memberC, ReportType.ABUSE));
+
+		mockMvc.perform(post("/api/planwith-fo-report/reports/comments/" + COMMENT_UUID)
+						.header("X-Member-Uuid", memberD)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "reportType": "OTHER"
+								}
+								"""))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.reportCount").value(4))
+				.andExpect(jsonPath("$.thresholdReached").value(true))
+				.andExpect(jsonPath("$.message").value("댓글을 신고했다"));
+
+		assertThat(storyCommentReportRepository.existsByCommentUuidAndMemberUuid(COMMENT_UUID, memberD)).isTrue();
+		assertThat(storyCommentReportRepository.countByCommentUuid(COMMENT_UUID)).isEqualTo(4L);
 	}
 }
