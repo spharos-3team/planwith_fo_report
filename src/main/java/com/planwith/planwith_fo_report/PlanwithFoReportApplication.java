@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 import com.planwith.planwith_fo_report.config.AuthProperties;
+import com.planwith.planwith_fo_report.config.CommentServiceProperties;
 import com.planwith.planwith_fo_report.config.DeployProperties;
 import com.planwith.planwith_fo_report.config.KafkaAppProperties;
 import com.planwith.planwith_fo_report.config.OutboxProperties;
@@ -12,6 +13,7 @@ import com.planwith.planwith_fo_report.config.OutboxProperties;
 @SpringBootApplication
 @EnableConfigurationProperties({
 		AuthProperties.class,
+		CommentServiceProperties.class,
 		DeployProperties.class,
 		KafkaAppProperties.class,
 		OutboxProperties.class

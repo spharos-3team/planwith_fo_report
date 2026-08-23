@@ -12,10 +12,14 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import com.planwith.planwith_fo_report.adapter.in.web.auth.InvalidCredentialsException;
 import com.planwith.planwith_fo_report.adapter.in.web.dto.ApiErrorResponse;
+import com.planwith.planwith_fo_report.domain.report.exception.CommentNotFoundException;
+import com.planwith.planwith_fo_report.domain.report.exception.CommentNotReportableException;
+import com.planwith.planwith_fo_report.domain.report.exception.CommentServiceUnavailableException;
 import com.planwith.planwith_fo_report.domain.report.exception.DuplicateReportException;
 import com.planwith.planwith_fo_report.domain.report.exception.InvalidReportException;
 import com.planwith.planwith_fo_report.domain.report.exception.InvalidReportStatusTransitionException;
 import com.planwith.planwith_fo_report.domain.report.exception.ReportNotFoundException;
+import com.planwith.planwith_fo_report.domain.report.exception.SelfCommentReportException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,6 +30,30 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(InvalidCredentialsException.class)
 	public ResponseEntity<ApiErrorResponse> handleInvalidCredentials(InvalidCredentialsException exception) {
 		return createErrorResponse(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", exception.getMessage());
+	}
+
+	@ExceptionHandler(CommentNotFoundException.class)
+	public ResponseEntity<ApiErrorResponse> handleCommentNotFound(CommentNotFoundException exception) {
+		log.warn("GlobalExceptionHandler : handleCommentNotFound : 존재하지 않는 댓글 신고 차단");
+		return createErrorResponse(HttpStatus.NOT_FOUND, "COMMENT_NOT_FOUND", exception.getMessage());
+	}
+
+	@ExceptionHandler(CommentNotReportableException.class)
+	public ResponseEntity<ApiErrorResponse> handleCommentNotReportable(CommentNotReportableException exception) {
+		log.warn("GlobalExceptionHandler : handleCommentNotReportable : 삭제된 댓글 신고 차단");
+		return createErrorResponse(HttpStatus.CONFLICT, "COMMENT_NOT_REPORTABLE", exception.getMessage());
+	}
+
+	@ExceptionHandler(SelfCommentReportException.class)
+	public ResponseEntity<ApiErrorResponse> handleSelfCommentReport(SelfCommentReportException exception) {
+		log.warn("GlobalExceptionHandler : handleSelfCommentReport : 본인 댓글 신고 차단");
+		return createErrorResponse(HttpStatus.FORBIDDEN, "SELF_COMMENT_REPORT", exception.getMessage());
+	}
+
+	@ExceptionHandler(CommentServiceUnavailableException.class)
+	public ResponseEntity<ApiErrorResponse> handleCommentServiceUnavailable(CommentServiceUnavailableException exception) {
+		log.error("GlobalExceptionHandler : handleCommentServiceUnavailable : Comment Service 연동 실패");
+		return createErrorResponse(HttpStatus.SERVICE_UNAVAILABLE, "COMMENT_SERVICE_UNAVAILABLE", exception.getMessage());
 	}
 
 	@ExceptionHandler(ReportNotFoundException.class)
