@@ -1,3 +1,39 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.kafka.autoconfigure.KafkaAutoConfiguration
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+  datasource:
+    url: jdbc:h2:mem:report_testdb;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  kafka:
+    bootstrap-servers: localhost:9092
+
 eureka:
   client:
     enabled: false
+
+app:
+  kafka:
+    enabled: false
+  outbox:
+    relay-enabled: false
+    relay-interval-ms: 60000
+    batch-size: 10
+  auth:
+    id: test-001
+    pw: 1234
+  deploy:
+    marker: planwith-fo-report-deploy-v1
+  gateway:
+    public-url: /

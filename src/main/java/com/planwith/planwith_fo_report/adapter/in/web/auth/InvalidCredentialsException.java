@@ -1,4 +1,4 @@
-package com.planwith.planwith_fo_report.exception;
+package com.planwith.planwith_fo_report.adapter.in.web.auth;
 
 public class InvalidCredentialsException extends RuntimeException {
 

@@ -1,4 +1,4 @@
-package com.planwith.planwith_fo_report.dto;
+package com.planwith.planwith_fo_report.adapter.in.web.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
