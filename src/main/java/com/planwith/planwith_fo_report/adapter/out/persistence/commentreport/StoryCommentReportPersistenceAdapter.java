@@ -77,4 +77,10 @@ class StoryCommentReportPersistenceAdapter implements StoryCommentReportReposito
 				memberUuid.toString()
 		);
 	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public long countByCommentUuid(UUID commentUuid) {
+		return storyCommentReportJpaRepository.countByCommentUuid(commentUuid.toString());
+	}
 }

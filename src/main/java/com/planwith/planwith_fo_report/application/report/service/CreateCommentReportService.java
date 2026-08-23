@@ -4,9 +4,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.planwith.planwith_fo_report.application.report.command.CreateCommentReportCommand;
+import com.planwith.planwith_fo_report.application.report.port.in.CountCommentReportsUseCase;
 import com.planwith.planwith_fo_report.application.report.port.in.CreateCommentReportUseCase;
 import com.planwith.planwith_fo_report.application.report.port.in.ValidateCommentReportInputUseCase;
 import com.planwith.planwith_fo_report.application.report.port.out.StoryCommentReportRepository;
+import com.planwith.planwith_fo_report.application.report.result.CommentReportCountResult;
 import com.planwith.planwith_fo_report.application.report.result.CommentReportInputResult;
 import com.planwith.planwith_fo_report.application.report.result.CreateCommentReportResult;
 import com.planwith.planwith_fo_report.domain.report.StoryCommentReport;
@@ -22,6 +24,7 @@ public class CreateCommentReportService implements CreateCommentReportUseCase {
 	private final ValidateCommentReportInputUseCase validateCommentReportInputUseCase;
 	private final DuplicateCommentReportGuard duplicateCommentReportGuard;
 	private final StoryCommentReportRepository storyCommentReportRepository;
+	private final CountCommentReportsUseCase countCommentReportsUseCase;
 
 	@Override
 	@Transactional
@@ -38,12 +41,14 @@ public class CreateCommentReportService implements CreateCommentReportUseCase {
 						validated.reportType()
 				)
 		);
+		CommentReportCountResult count = countCommentReportsUseCase.count(saved.getCommentUuid());
 
 		log.info(
-				"CreateCommentReportService : create : 댓글 신고 생성 완료 - commentReportUuid={}, commentUuid={}",
+				"CreateCommentReportService : create : 댓글 신고 생성 완료 - commentReportUuid={}, commentUuid={}, reportCount={}",
 				saved.getCommentReportUuid(),
-				saved.getCommentUuid()
+				saved.getCommentUuid(),
+				count.reportCount()
 		);
-		return CreateCommentReportResult.from(saved);
+		return CreateCommentReportResult.from(saved, count.reportCount());
 	}
 }

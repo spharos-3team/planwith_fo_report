@@ -10,15 +10,17 @@ public record CreateCommentReportResult(
 		UUID commentReportUuid,
 		UUID commentUuid,
 		ReportType reportType,
-		Instant createdAt
+		Instant createdAt,
+		long reportCount
 ) {
 
-	public static CreateCommentReportResult from(StoryCommentReport report) {
+	public static CreateCommentReportResult from(StoryCommentReport report, long reportCount) {
 		return new CreateCommentReportResult(
 				report.getCommentReportUuid(),
 				report.getCommentUuid(),
 				report.getReportType(),
-				report.getCreatedAt()
+				report.getCreatedAt(),
+				reportCount
 		);
 	}
 }

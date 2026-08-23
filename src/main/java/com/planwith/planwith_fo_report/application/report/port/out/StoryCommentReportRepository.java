@@ -14,4 +14,6 @@ public interface StoryCommentReportRepository {
 	Optional<StoryCommentReport> findByCommentReportUuid(UUID commentReportUuid);
 
 	boolean existsByCommentUuidAndMemberUuid(UUID commentUuid, UUID memberUuid);
+
+	long countByCommentUuid(UUID commentUuid);
 }

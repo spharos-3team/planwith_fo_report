@@ -62,6 +62,7 @@ class CommentReportCommandControllerIntegrationTests {
 				.andExpect(jsonPath("$.commentUuid").value(COMMENT_UUID.toString()))
 				.andExpect(jsonPath("$.reportType").value("HATE"))
 				.andExpect(jsonPath("$.createdAt").isNotEmpty())
+				.andExpect(jsonPath("$.reportCount").value(1))
 				.andExpect(jsonPath("$.message").value("댓글을 신고했다"));
 
 		assertThat(storyCommentReportRepository.existsByCommentUuidAndMemberUuid(COMMENT_UUID, MEMBER_UUID)).isTrue();
@@ -109,7 +110,8 @@ class CommentReportCommandControllerIntegrationTests {
 								}
 								"""))
 				.andExpect(status().isCreated())
-				.andExpect(jsonPath("$.message").value("댓글을 신고했다"));
+				.andExpect(jsonPath("$.message").value("댓글을 신고했다"))
+				.andExpect(jsonPath("$.reportCount").value(2));
 
 		assertThat(storyCommentReportRepository.existsByCommentUuidAndMemberUuid(COMMENT_UUID, MEMBER_UUID)).isTrue();
 		assertThat(storyCommentReportRepository.existsByCommentUuidAndMemberUuid(COMMENT_UUID, otherMemberUuid)).isTrue();

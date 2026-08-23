@@ -1,8 +1,10 @@
 package com.planwith.planwith_fo_report.adapter.out.persistence.commentreport;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
 import java.util.UUID;
 
@@ -56,5 +58,14 @@ class StoryCommentReportPersistenceAdapterTest {
 		assertThatThrownBy(() -> storyCommentReportPersistenceAdapter.save(
 				StoryCommentReport.create(COMMENT_UUID, MEMBER_UUID, ReportType.SPAM)
 		)).isSameAs(integrityViolation);
+	}
+
+	@Test
+	void countByCommentUuidDelegatesToJpaRepository() {
+		given(storyCommentReportJpaRepository.countByCommentUuid(COMMENT_UUID.toString())).willReturn(3L);
+
+		assertThat(storyCommentReportPersistenceAdapter.countByCommentUuid(COMMENT_UUID)).isEqualTo(3L);
+
+		verify(storyCommentReportJpaRepository).countByCommentUuid(COMMENT_UUID.toString());
 	}
 }
