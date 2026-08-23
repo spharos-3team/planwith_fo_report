@@ -3,11 +3,13 @@ package com.planwith.planwith_fo_report.adapter.out.persistence.commentreport;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.planwith.planwith_fo_report.application.report.port.out.StoryCommentReportRepository;
 import com.planwith.planwith_fo_report.domain.report.StoryCommentReport;
+import com.planwith.planwith_fo_report.domain.report.exception.DuplicateReportException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,15 +24,20 @@ class StoryCommentReportPersistenceAdapter implements StoryCommentReportReposito
 	@Override
 	@Transactional
 	public StoryCommentReport save(StoryCommentReport storyCommentReport) {
-		StoryCommentReportJpaEntity saved = storyCommentReportJpaRepository.save(
-				StoryCommentReportJpaEntity.fromDomain(storyCommentReport)
-		);
-		log.info(
-				"StoryCommentReportPersistenceAdapter : save : 댓글 신고 저장 완료 - commentReportId={}, commentReportUuid={}",
-				saved.getCommentReportId(),
-				saved.getCommentReportUuid()
-		);
-		return saved.toDomain();
+		try {
+			StoryCommentReportJpaEntity saved = storyCommentReportJpaRepository.save(
+					StoryCommentReportJpaEntity.fromDomain(storyCommentReport)
+			);
+			log.info(
+					"StoryCommentReportPersistenceAdapter : save : 댓글 신고 저장 완료 - commentReportId={}, commentReportUuid={}",
+					saved.getCommentReportId(),
+					saved.getCommentReportUuid()
+			);
+			return saved.toDomain();
+		} catch (DataIntegrityViolationException exception) {
+			log.warn("StoryCommentReportPersistenceAdapter : save : 댓글 신고 고유 제약 위반");
+			throw new DuplicateReportException();
+		}
 	}
 
 	@Override
