@@ -1,14 +1,13 @@
-package com.planwith.planwith_fo_report.service;
+package com.planwith.planwith_fo_report.adapter.in.web.auth;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
 import org.springframework.stereotype.Service;
 
+import com.planwith.planwith_fo_report.adapter.in.web.dto.LoginRequest;
+import com.planwith.planwith_fo_report.adapter.in.web.dto.LoginResponse;
 import com.planwith.planwith_fo_report.config.AuthProperties;
-import com.planwith.planwith_fo_report.dto.LoginRequest;
-import com.planwith.planwith_fo_report.dto.LoginResponse;
-import com.planwith.planwith_fo_report.exception.InvalidCredentialsException;
 
 @Service
 public class AuthService {

@@ -1,4 +1,4 @@
-package com.planwith.planwith_fo_report.dto;
+package com.planwith.planwith_fo_report.adapter.in.web.dto;
 
 import java.time.Instant;
 
