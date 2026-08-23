@@ -1,5 +1,7 @@
 package com.planwith.planwith_fo_report.adapter.out.messaging;
 
+import java.util.UUID;
+
 import com.planwith.planwith_fo_report.domain.report.event.DomainEvent;
 import com.planwith.planwith_fo_report.domain.report.event.ModerationActionRequired;
 import com.planwith.planwith_fo_report.domain.report.event.ReportCreated;
@@ -58,7 +60,7 @@ final class DomainEventPayloadMapper {
 					  "reportUuid":"%s",
 					  "targetType":"%s",
 					  "targetUuid":"%s",
-					  "reviewerUuid":"%s",
+					  "reviewerUuid":%s,
 					  "occurredAt":"%s"
 					}
 					""".formatted(
@@ -66,7 +68,7 @@ final class DomainEventPayloadMapper {
 					required.reportUuid(),
 					required.targetType(),
 					required.targetUuid(),
-					required.reviewerUuid(),
+					toJsonUuid(required.reviewerUuid()),
 					required.occurredAt()
 			));
 		}
@@ -76,6 +78,13 @@ final class DomainEventPayloadMapper {
 				  "occurredAt":"%s"
 				}
 				""".formatted(event.eventType(), event.occurredAt()));
+	}
+
+	private static String toJsonUuid(UUID uuid) {
+		if (uuid == null) {
+			return "null";
+		}
+		return "\"" + uuid + "\"";
 	}
 
 	private static String toJsonString(String value) {

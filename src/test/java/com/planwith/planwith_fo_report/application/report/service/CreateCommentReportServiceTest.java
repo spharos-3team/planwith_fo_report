@@ -3,6 +3,7 @@ package com.planwith.planwith_fo_report.application.report.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.never;
@@ -48,6 +49,9 @@ class CreateCommentReportServiceTest {
 	@Mock
 	private CountCommentReportsUseCase countCommentReportsUseCase;
 
+	@Mock
+	private CommentReportThresholdHandler commentReportThresholdHandler;
+
 	private CreateCommentReportService createCommentReportService;
 
 	@BeforeEach
@@ -56,7 +60,8 @@ class CreateCommentReportServiceTest {
 				validateCommentReportInputUseCase,
 				duplicateCommentReportGuard,
 				storyCommentReportRepository,
-				countCommentReportsUseCase
+				countCommentReportsUseCase,
+				commentReportThresholdHandler
 		);
 	}
 
@@ -79,6 +84,8 @@ class CreateCommentReportServiceTest {
 				.willAnswer(invocation -> invocation.getArgument(0));
 		given(countCommentReportsUseCase.count(COMMENT_UUID))
 				.willReturn(new CommentReportCountResult(COMMENT_UUID, 1L));
+		given(commentReportThresholdHandler.handle(any(UUID.class), any(UUID.class), anyLong()))
+				.willReturn(false);
 
 		CreateCommentReportResult result = createCommentReportService.create(command);
 
@@ -87,9 +94,11 @@ class CreateCommentReportServiceTest {
 		assertThat(result.commentReportUuid()).isNotNull();
 		assertThat(result.createdAt()).isNotNull();
 		assertThat(result.reportCount()).isEqualTo(1L);
+		assertThat(result.thresholdReached()).isFalse();
 
 		verify(duplicateCommentReportGuard).assertNotDuplicated(COMMENT_UUID, MEMBER_UUID);
 		verify(countCommentReportsUseCase).count(COMMENT_UUID);
+		verify(commentReportThresholdHandler).handle(COMMENT_UUID, result.commentReportUuid(), 1L);
 		ArgumentCaptor<StoryCommentReport> captor = ArgumentCaptor.forClass(StoryCommentReport.class);
 		verify(storyCommentReportRepository).save(captor.capture());
 		assertThat(captor.getValue().getCommentUuid()).isEqualTo(COMMENT_UUID);
@@ -122,6 +131,36 @@ class CreateCommentReportServiceTest {
 		verify(duplicateCommentReportGuard).assertNotDuplicated(COMMENT_UUID, MEMBER_UUID);
 		verify(storyCommentReportRepository, never()).save(any());
 		verify(countCommentReportsUseCase, never()).count(any());
+		verify(commentReportThresholdHandler, never()).handle(any(), any(), anyLong());
+	}
+
+	@Test
+	void requestsHideWhenReportCountReachesThreshold() {
+		CreateCommentReportCommand command = new CreateCommentReportCommand(
+				COMMENT_UUID,
+				ReportType.HATE,
+				MEMBER_UUID
+		);
+		given(validateCommentReportInputUseCase.validate(command))
+				.willReturn(new CommentReportInputResult(
+						COMMENT_UUID,
+						ReportType.HATE,
+						MEMBER_UUID,
+						AUTHOR_UUID,
+						true
+				));
+		given(storyCommentReportRepository.save(any(StoryCommentReport.class)))
+				.willAnswer(invocation -> invocation.getArgument(0));
+		given(countCommentReportsUseCase.count(COMMENT_UUID))
+				.willReturn(new CommentReportCountResult(COMMENT_UUID, 3L));
+		given(commentReportThresholdHandler.handle(any(UUID.class), any(UUID.class), anyLong()))
+				.willReturn(true);
+
+		CreateCommentReportResult result = createCommentReportService.create(command);
+
+		assertThat(result.reportCount()).isEqualTo(3L);
+		assertThat(result.thresholdReached()).isTrue();
+		verify(commentReportThresholdHandler).handle(COMMENT_UUID, result.commentReportUuid(), 3L);
 	}
 
 	@Test
@@ -140,5 +179,6 @@ class CreateCommentReportServiceTest {
 		verify(duplicateCommentReportGuard, never()).assertNotDuplicated(any(), any());
 		verify(storyCommentReportRepository, never()).save(any());
 		verify(countCommentReportsUseCase, never()).count(any());
+		verify(commentReportThresholdHandler, never()).handle(any(), any(), anyLong());
 	}
 }

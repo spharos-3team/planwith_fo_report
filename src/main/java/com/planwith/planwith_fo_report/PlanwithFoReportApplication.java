@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 import com.planwith.planwith_fo_report.config.AuthProperties;
+import com.planwith.planwith_fo_report.config.CommentReportThresholdProperties;
 import com.planwith.planwith_fo_report.config.CommentServiceProperties;
 import com.planwith.planwith_fo_report.config.DeployProperties;
 import com.planwith.planwith_fo_report.config.KafkaAppProperties;
@@ -15,6 +16,7 @@ import com.planwith.planwith_fo_report.config.OutboxProperties;
 		AuthProperties.class,
 		CommentServiceProperties.class,
 		DeployProperties.class,
+		CommentReportThresholdProperties.class,
 		KafkaAppProperties.class,
 		OutboxProperties.class
 })

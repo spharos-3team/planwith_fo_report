@@ -29,7 +29,7 @@ class ModerationOutboxAdapter implements ModerationOutboxPort {
 				  "reportUuid":"%s",
 				  "targetType":"%s",
 				  "targetUuid":"%s",
-				  "reviewerUuid":"%s",
+				  "reviewerUuid":%s,
 				  "occurredAt":"%s"
 				}
 				""".formatted(
@@ -37,7 +37,7 @@ class ModerationOutboxAdapter implements ModerationOutboxPort {
 				event.reportUuid(),
 				event.targetType(),
 				event.targetUuid(),
-				event.reviewerUuid(),
+				toJsonUuid(event.reviewerUuid()),
 				event.occurredAt()
 		).replaceAll("\\s+", " ").trim();
 
@@ -51,5 +51,12 @@ class ModerationOutboxAdapter implements ModerationOutboxPort {
 		);
 		outboxEventJpaRepository.save(entity);
 		log.info("ModerationOutboxAdapter : save : Moderation Outbox 저장 완료 - reportUuid={}", event.reportUuid());
+	}
+
+	private static String toJsonUuid(UUID uuid) {
+		if (uuid == null) {
+			return "null";
+		}
+		return "\"" + uuid + "\"";
 	}
 }

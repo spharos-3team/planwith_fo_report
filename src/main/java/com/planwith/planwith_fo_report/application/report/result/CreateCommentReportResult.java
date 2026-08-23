@@ -11,16 +11,22 @@ public record CreateCommentReportResult(
 		UUID commentUuid,
 		ReportType reportType,
 		Instant createdAt,
-		long reportCount
+		long reportCount,
+		boolean thresholdReached
 ) {
 
-	public static CreateCommentReportResult from(StoryCommentReport report, long reportCount) {
+	public static CreateCommentReportResult from(
+			StoryCommentReport report,
+			long reportCount,
+			boolean thresholdReached
+	) {
 		return new CreateCommentReportResult(
 				report.getCommentReportUuid(),
 				report.getCommentUuid(),
 				report.getReportType(),
 				report.getCreatedAt(),
-				reportCount
+				reportCount,
+				thresholdReached
 		);
 	}
 }
