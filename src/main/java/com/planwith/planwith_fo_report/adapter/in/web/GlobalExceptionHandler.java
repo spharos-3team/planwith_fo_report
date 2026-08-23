@@ -5,6 +5,7 @@ import java.time.Instant;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -20,6 +21,7 @@ import com.planwith.planwith_fo_report.domain.report.exception.InvalidReportExce
 import com.planwith.planwith_fo_report.domain.report.exception.InvalidReportStatusTransitionException;
 import com.planwith.planwith_fo_report.domain.report.exception.ReportNotFoundException;
 import com.planwith.planwith_fo_report.domain.report.exception.SelfCommentReportException;
+import com.planwith.planwith_fo_report.domain.report.exception.UnauthenticatedMemberException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,6 +32,12 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(InvalidCredentialsException.class)
 	public ResponseEntity<ApiErrorResponse> handleInvalidCredentials(InvalidCredentialsException exception) {
 		return createErrorResponse(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", exception.getMessage());
+	}
+
+	@ExceptionHandler(UnauthenticatedMemberException.class)
+	public ResponseEntity<ApiErrorResponse> handleUnauthenticatedMember(UnauthenticatedMemberException exception) {
+		log.warn("GlobalExceptionHandler : handleUnauthenticatedMember : 로그인 회원 정보 없음");
+		return createErrorResponse(HttpStatus.UNAUTHORIZED, "UNAUTHENTICATED_MEMBER", exception.getMessage());
 	}
 
 	@ExceptionHandler(CommentNotFoundException.class)
@@ -93,7 +101,26 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
 	public ResponseEntity<ApiErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException exception) {
+		if (CommentReportInputController.MEMBER_UUID_HEADER.equals(exception.getName())) {
+			return createErrorResponse(HttpStatus.UNAUTHORIZED, "UNAUTHENTICATED_MEMBER", "로그인 회원 정보가 올바르지 않습니다.");
+		}
 		return createErrorResponse(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", "요청값 형식이 올바르지 않습니다.");
+	}
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ResponseEntity<ApiErrorResponse> handleUnreadable(HttpMessageNotReadableException exception) {
+		String detail = exception.getMostSpecificCause().getMessage();
+		if (detail != null && detail.contains("ReportType")) {
+			return createErrorResponse(
+					HttpStatus.BAD_REQUEST,
+					"INVALID_REQUEST",
+					"신고 사유는 SPAM, ABUSE, HATE, SEXUAL, PRIVACY, OTHER 중 하나여야 합니다."
+			);
+		}
+		if (detail != null && detail.toLowerCase().contains("uuid")) {
+			return createErrorResponse(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", "댓글 UUID 형식이 올바르지 않습니다.");
+		}
+		return createErrorResponse(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", "요청값이 올바르지 않습니다.");
 	}
 
 	private ResponseEntity<ApiErrorResponse> createErrorResponse(
