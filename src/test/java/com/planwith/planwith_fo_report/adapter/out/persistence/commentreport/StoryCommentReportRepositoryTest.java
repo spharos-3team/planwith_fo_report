@@ -98,4 +98,21 @@ class StoryCommentReportRepositoryTest {
 		assertThat(storyCommentReportRepository.existsByCommentUuidAndMemberUuid(COMMENT_UUID, MEMBER_UUID)).isTrue();
 		assertThat(storyCommentReportRepository.existsByCommentUuidAndMemberUuid(COMMENT_UUID, otherMemberUuid)).isTrue();
 	}
+
+	@Test
+	void countByCommentUuidAccumulatesDifferentMembers() {
+		UUID otherMemberUuid = UUID.fromString("44444444-4444-4444-4444-444444444444");
+		UUID thirdMemberUuid = UUID.fromString("66666666-6666-6666-6666-666666666666");
+		UUID otherCommentUuid = UUID.fromString("55555555-5555-5555-5555-555555555555");
+
+		assertThat(storyCommentReportRepository.countByCommentUuid(COMMENT_UUID)).isZero();
+
+		storyCommentReportRepository.save(StoryCommentReport.create(COMMENT_UUID, MEMBER_UUID, ReportType.SPAM));
+		storyCommentReportRepository.save(StoryCommentReport.create(COMMENT_UUID, otherMemberUuid, ReportType.HATE));
+		storyCommentReportRepository.save(StoryCommentReport.create(COMMENT_UUID, thirdMemberUuid, ReportType.ABUSE));
+		storyCommentReportRepository.save(StoryCommentReport.create(otherCommentUuid, MEMBER_UUID, ReportType.OTHER));
+
+		assertThat(storyCommentReportRepository.countByCommentUuid(COMMENT_UUID)).isEqualTo(3L);
+		assertThat(storyCommentReportRepository.countByCommentUuid(otherCommentUuid)).isEqualTo(1L);
+	}
 }

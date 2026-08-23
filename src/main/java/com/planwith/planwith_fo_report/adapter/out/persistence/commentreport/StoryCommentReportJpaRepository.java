@@ -9,4 +9,6 @@ interface StoryCommentReportJpaRepository extends JpaRepository<StoryCommentRepo
 	Optional<StoryCommentReportJpaEntity> findByCommentReportUuid(String commentReportUuid);
 
 	boolean existsByCommentUuidAndMemberUuid(String commentUuid, String memberUuid);
+
+	long countByCommentUuid(String commentUuid);
 }

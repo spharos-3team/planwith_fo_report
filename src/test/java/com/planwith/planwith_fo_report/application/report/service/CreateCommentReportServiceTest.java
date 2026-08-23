@@ -18,8 +18,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.planwith.planwith_fo_report.application.report.command.CreateCommentReportCommand;
+import com.planwith.planwith_fo_report.application.report.port.in.CountCommentReportsUseCase;
 import com.planwith.planwith_fo_report.application.report.port.in.ValidateCommentReportInputUseCase;
 import com.planwith.planwith_fo_report.application.report.port.out.StoryCommentReportRepository;
+import com.planwith.planwith_fo_report.application.report.result.CommentReportCountResult;
 import com.planwith.planwith_fo_report.application.report.result.CommentReportInputResult;
 import com.planwith.planwith_fo_report.application.report.result.CreateCommentReportResult;
 import com.planwith.planwith_fo_report.domain.report.ReportType;
@@ -43,6 +45,9 @@ class CreateCommentReportServiceTest {
 	@Mock
 	private StoryCommentReportRepository storyCommentReportRepository;
 
+	@Mock
+	private CountCommentReportsUseCase countCommentReportsUseCase;
+
 	private CreateCommentReportService createCommentReportService;
 
 	@BeforeEach
@@ -50,7 +55,8 @@ class CreateCommentReportServiceTest {
 		createCommentReportService = new CreateCommentReportService(
 				validateCommentReportInputUseCase,
 				duplicateCommentReportGuard,
-				storyCommentReportRepository
+				storyCommentReportRepository,
+				countCommentReportsUseCase
 		);
 	}
 
@@ -71,6 +77,8 @@ class CreateCommentReportServiceTest {
 				));
 		given(storyCommentReportRepository.save(any(StoryCommentReport.class)))
 				.willAnswer(invocation -> invocation.getArgument(0));
+		given(countCommentReportsUseCase.count(COMMENT_UUID))
+				.willReturn(new CommentReportCountResult(COMMENT_UUID, 1L));
 
 		CreateCommentReportResult result = createCommentReportService.create(command);
 
@@ -78,8 +86,10 @@ class CreateCommentReportServiceTest {
 		assertThat(result.reportType()).isEqualTo(ReportType.HATE);
 		assertThat(result.commentReportUuid()).isNotNull();
 		assertThat(result.createdAt()).isNotNull();
+		assertThat(result.reportCount()).isEqualTo(1L);
 
 		verify(duplicateCommentReportGuard).assertNotDuplicated(COMMENT_UUID, MEMBER_UUID);
+		verify(countCommentReportsUseCase).count(COMMENT_UUID);
 		ArgumentCaptor<StoryCommentReport> captor = ArgumentCaptor.forClass(StoryCommentReport.class);
 		verify(storyCommentReportRepository).save(captor.capture());
 		assertThat(captor.getValue().getCommentUuid()).isEqualTo(COMMENT_UUID);
@@ -111,6 +121,7 @@ class CreateCommentReportServiceTest {
 
 		verify(duplicateCommentReportGuard).assertNotDuplicated(COMMENT_UUID, MEMBER_UUID);
 		verify(storyCommentReportRepository, never()).save(any());
+		verify(countCommentReportsUseCase, never()).count(any());
 	}
 
 	@Test
@@ -128,5 +139,6 @@ class CreateCommentReportServiceTest {
 
 		verify(duplicateCommentReportGuard, never()).assertNotDuplicated(any(), any());
 		verify(storyCommentReportRepository, never()).save(any());
+		verify(countCommentReportsUseCase, never()).count(any());
 	}
 }

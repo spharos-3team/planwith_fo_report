@@ -14,6 +14,7 @@ public record CreateCommentReportResponse(
 		UUID commentUuid,
 		ReportType reportType,
 		Instant createdAt,
+		long reportCount,
 		String message
 ) {
 
@@ -25,6 +26,7 @@ public record CreateCommentReportResponse(
 				result.commentUuid(),
 				result.reportType(),
 				result.createdAt(),
+				result.reportCount(),
 				SUCCESS_MESSAGE
 		);
 	}
