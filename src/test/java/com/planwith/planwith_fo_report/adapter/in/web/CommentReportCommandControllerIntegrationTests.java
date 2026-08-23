@@ -25,6 +25,7 @@ import com.planwith.planwith_fo_report.application.report.port.out.StoryCommentR
 import com.planwith.planwith_fo_report.domain.report.CommentReportContext;
 import com.planwith.planwith_fo_report.domain.report.ReportType;
 import com.planwith.planwith_fo_report.domain.report.StoryCommentReport;
+import com.planwith.planwith_fo_report.domain.report.exception.CommentServiceUnavailableException;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -124,6 +125,88 @@ class CommentReportCommandControllerIntegrationTests {
 	}
 
 	@Test
+	void rejectsCommentNotFound() throws Exception {
+		given(commentReportContextPort.findByCommentUuid(COMMENT_UUID))
+				.willReturn(Optional.empty());
+
+		mockMvc.perform(post("/api/planwith-fo-report/reports/comments/" + COMMENT_UUID)
+						.header("X-Member-Uuid", MEMBER_UUID)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "reportType": "HATE"
+								}
+								"""))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.code").value("COMMENT_NOT_FOUND"));
+	}
+
+	@Test
+	void rejectsDeletedComment() throws Exception {
+		given(commentReportContextPort.findByCommentUuid(COMMENT_UUID))
+				.willReturn(Optional.of(CommentReportContext.of(COMMENT_UUID, AUTHOR_UUID, false)));
+
+		mockMvc.perform(post("/api/planwith-fo-report/reports/comments/" + COMMENT_UUID)
+						.header("X-Member-Uuid", MEMBER_UUID)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "reportType": "HATE"
+								}
+								"""))
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.code").value("COMMENT_NOT_REPORTABLE"));
+	}
+
+	@Test
+	void rejectsSelfCommentReport() throws Exception {
+		given(commentReportContextPort.findByCommentUuid(COMMENT_UUID))
+				.willReturn(Optional.of(CommentReportContext.of(COMMENT_UUID, AUTHOR_UUID, true)));
+
+		mockMvc.perform(post("/api/planwith-fo-report/reports/comments/" + COMMENT_UUID)
+						.header("X-Member-Uuid", AUTHOR_UUID)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "reportType": "HATE"
+								}
+								"""))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value("SELF_REPORT_NOT_ALLOWED"));
+	}
+
+	@Test
+	void rejectsInvalidReportType() throws Exception {
+		mockMvc.perform(post("/api/planwith-fo-report/reports/comments/" + COMMENT_UUID)
+						.header("X-Member-Uuid", MEMBER_UUID)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "reportType": "INVALID"
+								}
+								"""))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+	}
+
+	@Test
+	void rejectsWhenCommentServiceUnavailable() throws Exception {
+		given(commentReportContextPort.findByCommentUuid(COMMENT_UUID))
+				.willThrow(new CommentServiceUnavailableException());
+
+		mockMvc.perform(post("/api/planwith-fo-report/reports/comments/" + COMMENT_UUID)
+						.header("X-Member-Uuid", MEMBER_UUID)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "reportType": "HATE"
+								}
+								"""))
+				.andExpect(status().isServiceUnavailable())
+				.andExpect(jsonPath("$.code").value("COMMENT_SERVICE_UNAVAILABLE"));
+	}
+
+	@Test
 	void rejectsDuplicateCommentReport() throws Exception {
 		given(commentReportContextPort.findByCommentUuid(COMMENT_UUID))
 				.willReturn(Optional.of(CommentReportContext.of(COMMENT_UUID, AUTHOR_UUID, true)));
@@ -140,7 +223,7 @@ class CommentReportCommandControllerIntegrationTests {
 								}
 								"""))
 				.andExpect(status().isConflict())
-				.andExpect(jsonPath("$.code").value("DUPLICATE_REPORT"));
+				.andExpect(jsonPath("$.code").value("DUPLICATE_COMMENT_REPORT"));
 	}
 
 	@Test
@@ -200,10 +283,11 @@ class CommentReportCommandControllerIntegrationTests {
 								"""))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.reportCount").value(4))
-				.andExpect(jsonPath("$.thresholdReached").value(true))
+				.andExpect(jsonPath("$.thresholdReached").value(false))
 				.andExpect(jsonPath("$.message").value("댓글을 신고했다"));
 
 		assertThat(storyCommentReportRepository.existsByCommentUuidAndMemberUuid(COMMENT_UUID, memberD)).isTrue();
 		assertThat(storyCommentReportRepository.countByCommentUuid(COMMENT_UUID)).isEqualTo(4L);
+		assertThat(outboxEventJpaRepository.findAll()).isEmpty();
 	}
 }

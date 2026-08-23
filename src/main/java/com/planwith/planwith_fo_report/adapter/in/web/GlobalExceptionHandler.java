@@ -16,6 +16,7 @@ import com.planwith.planwith_fo_report.adapter.in.web.dto.ApiErrorResponse;
 import com.planwith.planwith_fo_report.domain.report.exception.CommentNotFoundException;
 import com.planwith.planwith_fo_report.domain.report.exception.CommentNotReportableException;
 import com.planwith.planwith_fo_report.domain.report.exception.CommentServiceUnavailableException;
+import com.planwith.planwith_fo_report.domain.report.exception.DuplicateCommentReportException;
 import com.planwith.planwith_fo_report.domain.report.exception.DuplicateReportException;
 import com.planwith.planwith_fo_report.domain.report.exception.InvalidReportException;
 import com.planwith.planwith_fo_report.domain.report.exception.InvalidReportStatusTransitionException;
@@ -55,7 +56,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(SelfCommentReportException.class)
 	public ResponseEntity<ApiErrorResponse> handleSelfCommentReport(SelfCommentReportException exception) {
 		log.warn("GlobalExceptionHandler : handleSelfCommentReport : 본인 댓글 신고 차단");
-		return createErrorResponse(HttpStatus.FORBIDDEN, "SELF_COMMENT_REPORT", exception.getMessage());
+		return createErrorResponse(HttpStatus.FORBIDDEN, "SELF_REPORT_NOT_ALLOWED", exception.getMessage());
 	}
 
 	@ExceptionHandler(CommentServiceUnavailableException.class)
@@ -68,6 +69,12 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ApiErrorResponse> handleReportNotFound(ReportNotFoundException exception) {
 		log.warn("GlobalExceptionHandler : handleReportNotFound : 신고 조회 실패 - {}", exception.getMessage());
 		return createErrorResponse(HttpStatus.NOT_FOUND, "REPORT_NOT_FOUND", exception.getMessage());
+	}
+
+	@ExceptionHandler(DuplicateCommentReportException.class)
+	public ResponseEntity<ApiErrorResponse> handleDuplicateCommentReport(DuplicateCommentReportException exception) {
+		log.warn("GlobalExceptionHandler : handleDuplicateCommentReport : 동일 회원 동일 댓글 중복 신고");
+		return createErrorResponse(HttpStatus.CONFLICT, "DUPLICATE_COMMENT_REPORT", exception.getMessage());
 	}
 
 	@ExceptionHandler(DuplicateReportException.class)

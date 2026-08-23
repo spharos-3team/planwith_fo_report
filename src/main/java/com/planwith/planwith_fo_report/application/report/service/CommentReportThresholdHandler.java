@@ -19,28 +19,35 @@ public class CommentReportThresholdHandler {
 	private final CommentHideRequestPort commentHideRequestPort;
 
 	public boolean handle(UUID commentUuid, UUID commentReportUuid, long reportCount) {
-		if (!commentReportThreshold.isReached(reportCount)) {
+		int hideThreshold = commentReportThreshold.hideThreshold();
+		if (reportCount < hideThreshold) {
 			log.debug(
 					"CommentReportThresholdHandler : handle : 신고 임계치 미달 - commentUuid={}, reportCount={}, hideThreshold={}",
 					commentUuid,
 					reportCount,
-					commentReportThreshold.hideThreshold()
+					hideThreshold
+			);
+			return false;
+		}
+
+		if (reportCount > hideThreshold) {
+			log.debug(
+					"CommentReportThresholdHandler : handle : 신고 임계치 이미 도달, 숨김 이벤트 재발행 생략 - commentUuid={}, reportCount={}, hideThreshold={}",
+					commentUuid,
+					reportCount,
+					hideThreshold
 			);
 			return false;
 		}
 
 		log.info(
-				"CommentReportThresholdHandler : handle : 신고 임계치 도달, 댓글 숨김 처리 요청 - commentUuid={}, commentReportUuid={}, reportCount={}, threshold={}",
+				"CommentReportThresholdHandler : handle : 신고 임계치 최초 도달, 댓글 숨김 처리 요청 - commentUuid={}, commentReportUuid={}, reportCount={}, threshold={}",
 				commentUuid,
 				commentReportUuid,
 				reportCount,
-				commentReportThreshold.hideThreshold()
+				hideThreshold
 		);
-		commentHideRequestPort.requestHide(
-				commentUuid,
-				reportCount,
-				commentReportThreshold.hideThreshold()
-		);
+		commentHideRequestPort.requestHide(commentUuid, reportCount, hideThreshold);
 		return true;
 	}
 }

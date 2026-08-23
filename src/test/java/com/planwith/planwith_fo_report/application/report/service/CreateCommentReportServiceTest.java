@@ -27,7 +27,7 @@ import com.planwith.planwith_fo_report.application.report.result.CommentReportIn
 import com.planwith.planwith_fo_report.application.report.result.CreateCommentReportResult;
 import com.planwith.planwith_fo_report.domain.report.ReportType;
 import com.planwith.planwith_fo_report.domain.report.StoryCommentReport;
-import com.planwith.planwith_fo_report.domain.report.exception.DuplicateReportException;
+import com.planwith.planwith_fo_report.domain.report.exception.DuplicateCommentReportException;
 import com.planwith.planwith_fo_report.domain.report.exception.InvalidReportException;
 
 @ExtendWith(MockitoExtension.class)
@@ -121,12 +121,12 @@ class CreateCommentReportServiceTest {
 						AUTHOR_UUID,
 						true
 				));
-		willThrow(new DuplicateReportException())
+		willThrow(new DuplicateCommentReportException())
 				.given(duplicateCommentReportGuard)
 				.assertNotDuplicated(COMMENT_UUID, MEMBER_UUID);
 
 		assertThatThrownBy(() -> createCommentReportService.create(command))
-				.isInstanceOf(DuplicateReportException.class);
+				.isInstanceOf(DuplicateCommentReportException.class);
 
 		verify(duplicateCommentReportGuard).assertNotDuplicated(COMMENT_UUID, MEMBER_UUID);
 		verify(storyCommentReportRepository, never()).save(any());
@@ -161,6 +161,32 @@ class CreateCommentReportServiceTest {
 		assertThat(result.reportCount()).isEqualTo(3L);
 		assertThat(result.thresholdReached()).isTrue();
 		verify(commentReportThresholdHandler).handle(COMMENT_UUID, result.commentReportUuid(), 3L);
+	}
+
+	@Test
+	void propagatesDuplicateWhenConcurrentInsertViolatesUniqueConstraint() {
+		CreateCommentReportCommand command = new CreateCommentReportCommand(
+				COMMENT_UUID,
+				ReportType.SPAM,
+				MEMBER_UUID
+		);
+		given(validateCommentReportInputUseCase.validate(command))
+				.willReturn(new CommentReportInputResult(
+						COMMENT_UUID,
+						ReportType.SPAM,
+						MEMBER_UUID,
+						AUTHOR_UUID,
+						true
+				));
+		given(storyCommentReportRepository.save(any(StoryCommentReport.class)))
+				.willThrow(new DuplicateCommentReportException());
+
+		assertThatThrownBy(() -> createCommentReportService.create(command))
+				.isInstanceOf(DuplicateCommentReportException.class);
+
+		verify(duplicateCommentReportGuard).assertNotDuplicated(COMMENT_UUID, MEMBER_UUID);
+		verify(countCommentReportsUseCase, never()).count(any());
+		verify(commentReportThresholdHandler, never()).handle(any(), any(), anyLong());
 	}
 
 	@Test

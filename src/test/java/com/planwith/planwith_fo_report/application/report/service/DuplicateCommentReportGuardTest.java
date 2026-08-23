@@ -14,7 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.planwith.planwith_fo_report.application.report.port.out.StoryCommentReportRepository;
-import com.planwith.planwith_fo_report.domain.report.exception.DuplicateReportException;
+import com.planwith.planwith_fo_report.domain.report.exception.DuplicateCommentReportException;
 
 @ExtendWith(MockitoExtension.class)
 class DuplicateCommentReportGuardTest {
@@ -49,7 +49,7 @@ class DuplicateCommentReportGuardTest {
 				.willReturn(true);
 
 		assertThatThrownBy(() -> duplicateCommentReportGuard.assertNotDuplicated(COMMENT_UUID, MEMBER_UUID))
-				.isInstanceOf(DuplicateReportException.class);
+				.isInstanceOf(DuplicateCommentReportException.class);
 
 		verify(storyCommentReportRepository).existsByCommentUuidAndMemberUuid(COMMENT_UUID, MEMBER_UUID);
 	}

@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 import com.planwith.planwith_fo_report.application.report.port.out.StoryCommentReportRepository;
-import com.planwith.planwith_fo_report.domain.report.exception.DuplicateReportException;
+import com.planwith.planwith_fo_report.domain.report.exception.DuplicateCommentReportException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ public class DuplicateCommentReportGuard {
 					commentUuid,
 					memberUuid
 			);
-			throw new DuplicateReportException();
+			throw new DuplicateCommentReportException();
 		}
 	}
 }

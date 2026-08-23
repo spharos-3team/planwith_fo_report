@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.planwith.planwith_fo_report.application.report.port.out.StoryCommentReportRepository;
 import com.planwith.planwith_fo_report.domain.report.ReportType;
 import com.planwith.planwith_fo_report.domain.report.StoryCommentReport;
-import com.planwith.planwith_fo_report.domain.report.exception.DuplicateReportException;
+import com.planwith.planwith_fo_report.domain.report.exception.DuplicateCommentReportException;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -80,7 +80,7 @@ class StoryCommentReportRepositoryTest {
 
 		assertThatThrownBy(() -> storyCommentReportRepository.save(
 				StoryCommentReport.create(COMMENT_UUID, MEMBER_UUID, ReportType.HATE)
-		)).isInstanceOf(DuplicateReportException.class);
+		)).isInstanceOf(DuplicateCommentReportException.class);
 	}
 
 	@Test
