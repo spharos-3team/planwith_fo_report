@@ -73,6 +73,7 @@ app:
       report-created: ${KAFKA_TOPIC_REPORT_CREATED:planwith.report.created}
       report-reviewed: ${KAFKA_TOPIC_REPORT_REVIEWED:planwith.report.reviewed}
       moderation-action-required: ${KAFKA_TOPIC_MODERATION_ACTION_REQUIRED:planwith.report.moderation-action-required}
+      comment-report-threshold-reached: ${KAFKA_TOPIC_COMMENT_REPORT_THRESHOLD_REACHED:planwith.report.comment-report-threshold-reached}
   outbox:
     relay-enabled: ${OUTBOX_RELAY_ENABLED:false}
     relay-interval-ms: ${OUTBOX_RELAY_INTERVAL_MS:5000}

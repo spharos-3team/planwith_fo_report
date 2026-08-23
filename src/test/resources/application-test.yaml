@@ -26,6 +26,11 @@ eureka:
 app:
   kafka:
     enabled: false
+    topics:
+      report-created: planwith.report.created
+      report-reviewed: planwith.report.reviewed
+      moderation-action-required: planwith.report.moderation-action-required
+      comment-report-threshold-reached: planwith.report.comment-report-threshold-reached
   outbox:
     relay-enabled: false
     relay-interval-ms: 60000

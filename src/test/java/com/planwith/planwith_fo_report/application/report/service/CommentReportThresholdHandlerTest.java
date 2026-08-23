@@ -39,8 +39,8 @@ class CommentReportThresholdHandlerTest {
 		assertThat(commentReportThresholdHandler.handle(COMMENT_UUID, COMMENT_REPORT_UUID, 1L)).isFalse();
 		assertThat(commentReportThresholdHandler.handle(COMMENT_UUID, COMMENT_REPORT_UUID, 2L)).isFalse();
 
-		verify(commentHideRequestPort, never()).requestHide(COMMENT_UUID, COMMENT_REPORT_UUID, 1L);
-		verify(commentHideRequestPort, never()).requestHide(COMMENT_UUID, COMMENT_REPORT_UUID, 2L);
+		verify(commentHideRequestPort, never()).requestHide(COMMENT_UUID, 1L, 3);
+		verify(commentHideRequestPort, never()).requestHide(COMMENT_UUID, 2L, 3);
 	}
 
 	@Test
@@ -48,7 +48,7 @@ class CommentReportThresholdHandlerTest {
 		boolean reached = commentReportThresholdHandler.handle(COMMENT_UUID, COMMENT_REPORT_UUID, 3L);
 
 		assertThat(reached).isTrue();
-		verify(commentHideRequestPort).requestHide(COMMENT_UUID, COMMENT_REPORT_UUID, 3L);
+		verify(commentHideRequestPort).requestHide(COMMENT_UUID, 3L, 3);
 	}
 
 	@Test
@@ -56,6 +56,6 @@ class CommentReportThresholdHandlerTest {
 		boolean reached = commentReportThresholdHandler.handle(COMMENT_UUID, COMMENT_REPORT_UUID, 4L);
 
 		assertThat(reached).isTrue();
-		verify(commentHideRequestPort).requestHide(COMMENT_UUID, COMMENT_REPORT_UUID, 4L);
+		verify(commentHideRequestPort).requestHide(COMMENT_UUID, 4L, 3);
 	}
 }

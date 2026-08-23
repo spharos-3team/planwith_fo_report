@@ -169,8 +169,14 @@ class CommentReportCommandControllerIntegrationTests {
 		assertThat(outboxEventJpaRepository.findAll())
 				.hasSize(1)
 				.first()
-				.extracting("eventType")
-				.isEqualTo("ModerationActionRequired");
+				.satisfies(event -> {
+					assertThat(event.getEventType()).isEqualTo("COMMENT_REPORT_THRESHOLD_REACHED");
+					assertThat(event.getAggregateType()).isEqualTo("COMMENT");
+					assertThat(event.getAggregateUuid()).isEqualTo(COMMENT_UUID.toString());
+					assertThat(event.getPayload()).contains("\"commentUuid\":\"" + COMMENT_UUID + "\"");
+					assertThat(event.getPayload()).contains("\"reportCount\":3");
+					assertThat(event.getPayload()).contains("\"threshold\":3");
+				});
 	}
 
 	@Test

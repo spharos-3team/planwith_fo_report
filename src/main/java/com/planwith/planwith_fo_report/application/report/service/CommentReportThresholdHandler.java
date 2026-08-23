@@ -30,12 +30,17 @@ public class CommentReportThresholdHandler {
 		}
 
 		log.info(
-				"CommentReportThresholdHandler : handle : 신고 임계치 도달, 댓글 숨김 처리 요청 - commentUuid={}, commentReportUuid={}, reportCount={}",
+				"CommentReportThresholdHandler : handle : 신고 임계치 도달, 댓글 숨김 처리 요청 - commentUuid={}, commentReportUuid={}, reportCount={}, threshold={}",
 				commentUuid,
 				commentReportUuid,
-				reportCount
+				reportCount,
+				commentReportThreshold.hideThreshold()
 		);
-		commentHideRequestPort.requestHide(commentUuid, commentReportUuid, reportCount);
+		commentHideRequestPort.requestHide(
+				commentUuid,
+				reportCount,
+				commentReportThreshold.hideThreshold()
+		);
 		return true;
 	}
 }

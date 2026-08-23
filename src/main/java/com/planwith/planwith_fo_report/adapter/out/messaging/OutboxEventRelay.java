@@ -15,6 +15,7 @@ import com.planwith.planwith_fo_report.adapter.out.persistence.outbox.OutboxEven
 import com.planwith.planwith_fo_report.adapter.out.persistence.outbox.OutboxStatus;
 import com.planwith.planwith_fo_report.config.KafkaAppProperties;
 import com.planwith.planwith_fo_report.config.OutboxProperties;
+import com.planwith.planwith_fo_report.domain.report.event.CommentReportThresholdReachedEvent;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,14 +49,25 @@ class OutboxEventRelay {
 
 		log.info("OutboxEventRelay : publishPendingEvents : Outbox 대기 이벤트 발행 시작 - count={}", pendingEvents.size());
 
-		String topic = kafkaAppProperties.topics().moderationActionRequired();
 		for (OutboxEventJpaEntity event : pendingEvents) {
 			try {
+				String topic = resolveTopic(event.getEventType());
+				if (topic == null) {
+					log.warn(
+							"OutboxEventRelay : publishPendingEvents : 발행 대상이 아닌 Outbox 이벤트 - eventUuid={}, eventType={}",
+							event.getEventUuid(),
+							event.getEventType()
+					);
+					continue;
+				}
 				kafkaTemplate.send(topic, event.getAggregateUuid(), event.getPayload());
 				event.markPublished(Instant.now());
-				log.info("OutboxEventRelay : publishPendingEvents : Outbox 이벤트 발행 완료 - eventUuid={}, eventType={}",
+				log.info(
+						"OutboxEventRelay : publishPendingEvents : Outbox 이벤트 Kafka 발행 완료 - eventUuid={}, eventType={}, topic={}",
 						event.getEventUuid(),
-						event.getEventType());
+						event.getEventType(),
+						topic
+				);
 			} catch (RuntimeException exception) {
 				log.error("OutboxEventRelay : publishPendingEvents : Outbox 이벤트 발행 실패 - eventUuid={}",
 						event.getEventUuid(),
@@ -63,5 +75,15 @@ class OutboxEventRelay {
 				event.markFailed();
 			}
 		}
+	}
+
+	private String resolveTopic(String eventType) {
+		if (CommentReportThresholdReachedEvent.EVENT_TYPE.equals(eventType)) {
+			return kafkaAppProperties.topics().commentReportThresholdReached();
+		}
+		if ("ModerationActionRequired".equals(eventType)) {
+			return kafkaAppProperties.topics().moderationActionRequired();
+		}
+		return null;
 	}
 }

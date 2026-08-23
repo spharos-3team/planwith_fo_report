@@ -11,7 +11,8 @@ public record KafkaAppProperties(
 	public record Topics(
 			String reportCreated,
 			String reportReviewed,
-			String moderationActionRequired
+			String moderationActionRequired,
+			String commentReportThresholdReached
 	) {
 	}
 }
