@@ -42,8 +42,9 @@ app:
     marker: planwith-fo-report-deploy-v1
   gateway:
     public-url: /
+    auth-header-mapping-enabled: false
   comment-service:
     base-url: http://localhost:8099
-    report-context-path: /internal/comments/{commentUuid}/report-context}
+    report-context-path: /internal/comments/{commentUuid}/report-context
   comment-report:
     hide-threshold: 3

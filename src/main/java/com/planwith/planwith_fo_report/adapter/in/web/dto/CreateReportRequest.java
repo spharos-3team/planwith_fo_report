@@ -12,8 +12,7 @@ import jakarta.validation.constraints.Size;
 
 @Schema(description = "신고 생성 요청")
 public record CreateReportRequest(
-		@Schema(description = "신고자 UUID", example = "11111111-1111-1111-1111-111111111111")
-		@NotNull(message = "신고자 UUID는 필수입니다.")
+		@Schema(description = "호환성 유지용 신고자 UUID. 실제 신고자는 인증 헤더를 사용한다.", example = "11111111-1111-1111-1111-111111111111")
 		UUID reporterUuid,
 
 		@Schema(description = "신고 대상 유형", example = "STORY")
@@ -33,7 +32,7 @@ public record CreateReportRequest(
 		String detail
 ) {
 
-	public CreateReportCommand toCommand() {
-		return new CreateReportCommand(reporterUuid, targetType, targetUuid, reason, detail);
+	public CreateReportCommand toCommand(UUID authenticatedReporterUuid) {
+		return new CreateReportCommand(authenticatedReporterUuid, targetType, targetUuid, reason, detail);
 	}
 }

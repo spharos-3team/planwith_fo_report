@@ -29,10 +29,11 @@ class ReportControllerIntegrationTests {
 	@Test
 	void createAndReviewReportWorkflow() throws Exception {
 		MvcResult createResult = mockMvc.perform(post("/api/planwith-fo-report/reports")
+						.header("X-Member-Uuid", "11111111-1111-1111-1111-111111111111")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
-								  "reporterUuid": "11111111-1111-1111-1111-111111111111",
+								  "reporterUuid": "99999999-9999-9999-9999-999999999999",
 								  "targetType": "STORY",
 								  "targetUuid": "22222222-2222-2222-2222-222222222222",
 								  "reason": "SPAM",
@@ -40,6 +41,7 @@ class ReportControllerIntegrationTests {
 								}
 								"""))
 				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.reporterUuid").value("11111111-1111-1111-1111-111111111111"))
 				.andExpect(jsonPath("$.status").value("RECEIVED"))
 				.andExpect(jsonPath("$.targetType").value("STORY"))
 				.andExpect(jsonPath("$.targetUuid").value("22222222-2222-2222-2222-222222222222"))
@@ -52,6 +54,7 @@ class ReportControllerIntegrationTests {
 				.andExpect(jsonPath("$.reportUuid").value(reportUuid));
 
 		mockMvc.perform(post("/api/planwith-fo-report/reports/" + reportUuid + "/workflow")
+						.header("X-Member-Uuid", "33333333-3333-3333-3333-333333333333")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -63,6 +66,7 @@ class ReportControllerIntegrationTests {
 				.andExpect(jsonPath("$.status").value("REVIEWING"));
 
 		mockMvc.perform(post("/api/planwith-fo-report/reports/" + reportUuid + "/workflow")
+						.header("X-Member-Uuid", "33333333-3333-3333-3333-333333333333")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -75,6 +79,7 @@ class ReportControllerIntegrationTests {
 				.andExpect(jsonPath("$.status").value("APPROVED"));
 
 		mockMvc.perform(post("/api/planwith-fo-report/reports/" + reportUuid + "/workflow")
+						.header("X-Member-Uuid", "33333333-3333-3333-3333-333333333333")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -97,11 +102,13 @@ class ReportControllerIntegrationTests {
 				""";
 
 		mockMvc.perform(post("/api/planwith-fo-report/reports")
+						.header("X-Member-Uuid", "11111111-1111-1111-1111-111111111111")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(body))
 				.andExpect(status().isCreated());
 
 		mockMvc.perform(post("/api/planwith-fo-report/reports")
+						.header("X-Member-Uuid", "11111111-1111-1111-1111-111111111111")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(body))
 				.andExpect(status().isConflict())

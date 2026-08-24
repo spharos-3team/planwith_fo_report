@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,6 +19,7 @@ import com.planwith.planwith_fo_report.adapter.in.web.dto.ReviewReportRequest;
 import com.planwith.planwith_fo_report.application.report.port.in.CreateReportUseCase;
 import com.planwith.planwith_fo_report.application.report.port.in.GetReportUseCase;
 import com.planwith.planwith_fo_report.application.report.port.in.ReviewReportUseCase;
+import com.planwith.planwith_fo_report.domain.report.exception.UnauthenticatedMemberException;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -40,9 +42,15 @@ public class ReportController {
 	// 신고 생성
 	@PostMapping
 	@Operation(summary = "신고 생성", description = "STORY 또는 COMMENT를 target_uuid 기준으로 신고한다.")
-	public ResponseEntity<ReportResponse> createReport(@Valid @RequestBody CreateReportRequest request) {
+	public ResponseEntity<ReportResponse> createReport(
+			@RequestHeader(value = CommentReportInputController.MEMBER_UUID_HEADER, required = false) UUID memberUuid,
+			@Valid @RequestBody CreateReportRequest request
+	) {
+		if (memberUuid == null) {
+			throw new UnauthenticatedMemberException();
+		}
 		log.info("ReportController : POST createReport : 신고 생성 요청");
-		ReportResponse response = ReportResponse.from(createReportUseCase.createReport(request.toCommand()));
+		ReportResponse response = ReportResponse.from(createReportUseCase.createReport(request.toCommand(memberUuid)));
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
@@ -59,9 +67,13 @@ public class ReportController {
 	@Operation(summary = "신고 워크플로우 처리", description = "RECEIVED → REVIEWING → APPROVED|REJECTED → ACTIONED 상태를 전이한다.")
 	public ResponseEntity<ReportResponse> reviewReport(
 			@PathVariable UUID reportUuid,
+			@RequestHeader(value = CommentReportInputController.MEMBER_UUID_HEADER, required = false) UUID reviewerUuid,
 			@Valid @RequestBody ReviewReportRequest request
 	) {
+		if (reviewerUuid == null) {
+			throw new UnauthenticatedMemberException();
+		}
 		log.info("ReportController : POST reviewReport : 신고 워크플로우 처리 요청");
-		return ResponseEntity.ok(ReportResponse.from(reviewReportUseCase.reviewReport(request.toCommand(reportUuid))));
+		return ResponseEntity.ok(ReportResponse.from(reviewReportUseCase.reviewReport(request.toCommand(reportUuid, reviewerUuid))));
 	}
 }

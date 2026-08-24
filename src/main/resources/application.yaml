@@ -62,6 +62,7 @@ app:
     # Relative "/" avoids embedding a host IP in OpenAPI servers.
     # Set to the public Gateway URL only when clients must see an absolute base (no LAN IP in git).
     public-url: ${GATEWAY_PUBLIC_URL:/}
+    auth-header-mapping-enabled: ${GATEWAY_AUTH_HEADER_MAPPING_ENABLED:true}
   auth:
     id: ${LOGIN_ID:test-001}
     pw: ${LOGIN_PASSWORD:1234}
@@ -79,7 +80,7 @@ app:
     relay-interval-ms: ${OUTBOX_RELAY_INTERVAL_MS:5000}
     batch-size: ${OUTBOX_BATCH_SIZE:50}
   comment-service:
-    base-url: ${COMMENT_SERVICE_BASE_URL:http://planwith-fo-comment}
+    base-url: ${COMMENT_SERVICE_BASE_URL:http://planwith-fo-comment:8090}
     report-context-path: ${COMMENT_SERVICE_REPORT_CONTEXT_PATH:/internal/comments/{commentUuid}/report-context}
   comment-report:
     hide-threshold: ${COMMENT_REPORT_HIDE_THRESHOLD:3}

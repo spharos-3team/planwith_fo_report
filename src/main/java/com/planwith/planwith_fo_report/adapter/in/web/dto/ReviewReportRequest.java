@@ -15,7 +15,7 @@ public record ReviewReportRequest(
 		@NotNull(message = "워크플로우 액션은 필수입니다.")
 		ReportWorkflowAction action,
 
-		@Schema(description = "검토자 UUID. START_REVIEW, APPROVE, REJECT에 필수", example = "33333333-3333-3333-3333-333333333333")
+		@Schema(description = "호환성 유지용 검토자 UUID. 실제 검토자는 인증 헤더를 사용한다.", example = "33333333-3333-3333-3333-333333333333")
 		UUID reviewerUuid,
 
 		@Schema(description = "검토 의견", example = "커뮤니티 가이드 위반으로 확인")
@@ -23,7 +23,7 @@ public record ReviewReportRequest(
 		String reviewComment
 ) {
 
-	public ReviewReportCommand toCommand(UUID reportUuid) {
-		return new ReviewReportCommand(reportUuid, action, reviewerUuid, reviewComment);
+	public ReviewReportCommand toCommand(UUID reportUuid, UUID authenticatedReviewerUuid) {
+		return new ReviewReportCommand(reportUuid, action, authenticatedReviewerUuid, reviewComment);
 	}
 }
