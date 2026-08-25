@@ -44,7 +44,7 @@ class CommentReportInputControllerIntegrationTests {
 				.willReturn(Optional.of(CommentReportContext.of(COMMENT_UUID, AUTHOR_UUID, true)));
 
 		mockMvc.perform(post("/api/planwith-fo-report/comment-reports/input-validation")
-						.header("X-Member-Uuid", MEMBER_UUID)
+						.header("X-Auth-User-Id", MEMBER_UUID)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -62,7 +62,7 @@ class CommentReportInputControllerIntegrationTests {
 	@Test
 	void rejectsMissingCommentUuidBeforeApplicationService() throws Exception {
 		mockMvc.perform(post("/api/planwith-fo-report/comment-reports/input-validation")
-						.header("X-Member-Uuid", MEMBER_UUID)
+						.header("X-Auth-User-Id", MEMBER_UUID)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -79,7 +79,7 @@ class CommentReportInputControllerIntegrationTests {
 	@Test
 	void rejectsMissingReportTypeBeforeApplicationService() throws Exception {
 		mockMvc.perform(post("/api/planwith-fo-report/comment-reports/input-validation")
-						.header("X-Member-Uuid", MEMBER_UUID)
+						.header("X-Auth-User-Id", MEMBER_UUID)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -96,7 +96,7 @@ class CommentReportInputControllerIntegrationTests {
 	@Test
 	void rejectsUnknownReportTypeBeforeApplicationService() throws Exception {
 		mockMvc.perform(post("/api/planwith-fo-report/comment-reports/input-validation")
-						.header("X-Member-Uuid", MEMBER_UUID)
+						.header("X-Auth-User-Id", MEMBER_UUID)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -116,7 +116,7 @@ class CommentReportInputControllerIntegrationTests {
 	@Test
 	void rejectsInvalidCommentUuidFormatBeforeApplicationService() throws Exception {
 		mockMvc.perform(post("/api/planwith-fo-report/comment-reports/input-validation")
-						.header("X-Member-Uuid", MEMBER_UUID)
+						.header("X-Auth-User-Id", MEMBER_UUID)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -153,7 +153,7 @@ class CommentReportInputControllerIntegrationTests {
 				.willReturn(Optional.of(CommentReportContext.of(COMMENT_UUID, AUTHOR_UUID, true)));
 
 		mockMvc.perform(post("/api/planwith-fo-report/comment-reports/input-validation")
-						.header("X-Member-Uuid", MEMBER_UUID)
+						.header("X-Auth-User-Id", MEMBER_UUID)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{

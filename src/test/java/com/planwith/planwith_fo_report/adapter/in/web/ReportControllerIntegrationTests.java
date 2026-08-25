@@ -29,7 +29,7 @@ class ReportControllerIntegrationTests {
 	@Test
 	void createAndReviewReportWorkflow() throws Exception {
 		MvcResult createResult = mockMvc.perform(post("/api/planwith-fo-report/reports")
-						.header("X-Member-Uuid", "11111111-1111-1111-1111-111111111111")
+						.header("X-Auth-User-Id", "11111111-1111-1111-1111-111111111111")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -54,7 +54,7 @@ class ReportControllerIntegrationTests {
 				.andExpect(jsonPath("$.reportUuid").value(reportUuid));
 
 		mockMvc.perform(post("/api/planwith-fo-report/reports/" + reportUuid + "/workflow")
-						.header("X-Member-Uuid", "33333333-3333-3333-3333-333333333333")
+						.header("X-Auth-User-Id", "33333333-3333-3333-3333-333333333333")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -66,7 +66,7 @@ class ReportControllerIntegrationTests {
 				.andExpect(jsonPath("$.status").value("REVIEWING"));
 
 		mockMvc.perform(post("/api/planwith-fo-report/reports/" + reportUuid + "/workflow")
-						.header("X-Member-Uuid", "33333333-3333-3333-3333-333333333333")
+						.header("X-Auth-User-Id", "33333333-3333-3333-3333-333333333333")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -79,7 +79,7 @@ class ReportControllerIntegrationTests {
 				.andExpect(jsonPath("$.status").value("APPROVED"));
 
 		mockMvc.perform(post("/api/planwith-fo-report/reports/" + reportUuid + "/workflow")
-						.header("X-Member-Uuid", "33333333-3333-3333-3333-333333333333")
+						.header("X-Auth-User-Id", "33333333-3333-3333-3333-333333333333")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -102,13 +102,13 @@ class ReportControllerIntegrationTests {
 				""";
 
 		mockMvc.perform(post("/api/planwith-fo-report/reports")
-						.header("X-Member-Uuid", "11111111-1111-1111-1111-111111111111")
+						.header("X-Auth-User-Id", "11111111-1111-1111-1111-111111111111")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(body))
 				.andExpect(status().isCreated());
 
 		mockMvc.perform(post("/api/planwith-fo-report/reports")
-						.header("X-Member-Uuid", "11111111-1111-1111-1111-111111111111")
+						.header("X-Auth-User-Id", "11111111-1111-1111-1111-111111111111")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(body))
 				.andExpect(status().isConflict())

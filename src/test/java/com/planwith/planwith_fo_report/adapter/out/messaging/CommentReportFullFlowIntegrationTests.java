@@ -86,7 +86,7 @@ class CommentReportFullFlowIntegrationTests {
 	static final String COMMENT_HIDE_TOPIC = "planwith.report.comment-report-threshold-reached";
 
 	private static final String REPORT_PATH = "/api/planwith-fo-report/reports/comments/";
-	private static final String MEMBER_UUID_HEADER = "X-Member-Uuid";
+	private static final String MEMBER_UUID_HEADER = "X-Auth-User-Id";
 	private static final UUID AUTHOR_UUID = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 	private static final UUID MEMBER_A = UUID.fromString("11111111-1111-1111-1111-111111111111");
 	private static final UUID MEMBER_B = UUID.fromString("22222222-2222-2222-2222-222222222222");

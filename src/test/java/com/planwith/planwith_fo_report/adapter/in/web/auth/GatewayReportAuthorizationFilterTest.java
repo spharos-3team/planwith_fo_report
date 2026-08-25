@@ -7,22 +7,19 @@ import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 class GatewayReportAuthorizationFilterTest {
 
 	private final GatewayReportAuthorizationFilter filter = new GatewayReportAuthorizationFilter(true);
 
 	@Test
-	void mapsVerifiedGatewayIdentityAndRemovesSpoofedLegacyHeader() throws Exception {
+	void allowsAuthenticatedMemberRequest() throws Exception {
 		MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/planwith-fo-report/reports/comments/id");
 		request.addHeader(GatewayReportAuthorizationFilter.AUTH_USER_ID, "11111111-1111-1111-1111-111111111111");
-		request.addHeader(GatewayReportAuthorizationFilter.MEMBER_UUID_ALIAS, "spoofed");
-		MockFilterChain chain = new MockFilterChain();
-		filter.doFilter(request, new MockHttpServletResponse(), chain);
-		HttpServletRequest trusted = (HttpServletRequest) chain.getRequest();
-		assertThat(trusted.getHeader(GatewayReportAuthorizationFilter.MEMBER_UUID_ALIAS))
-				.isEqualTo("11111111-1111-1111-1111-111111111111");
+		MockHttpServletResponse response = new MockHttpServletResponse();
+
+		filter.doFilter(request, response, new MockFilterChain());
+
+		assertThat(response.getStatus()).isEqualTo(200);
 	}
 
 	@Test

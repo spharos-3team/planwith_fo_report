@@ -8,7 +8,7 @@ import com.planwith.planwith_fo_report.domain.report.ReportType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
-@Schema(description = "댓글 신고 생성 요청. commentUuid는 경로 변수, memberUuid는 X-Member-Uuid 헤더에서 획득한다.")
+@Schema(description = "댓글 신고 생성 요청. commentUuid는 경로 변수, memberUuid는 X-Auth-User-Id 헤더에서 획득한다.")
 public record CreateCommentReportTypeRequest(
 		@Schema(description = "신고 사유", example = "HATE", allowableValues = {
 				"SPAM", "ABUSE", "HATE", "SEXUAL", "PRIVACY", "OTHER"

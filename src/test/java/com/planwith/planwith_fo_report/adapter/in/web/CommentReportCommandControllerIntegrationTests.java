@@ -55,7 +55,7 @@ class CommentReportCommandControllerIntegrationTests {
 				.willReturn(Optional.of(CommentReportContext.of(COMMENT_UUID, AUTHOR_UUID, true)));
 
 		mockMvc.perform(post("/api/planwith-fo-report/reports/comments/" + COMMENT_UUID)
-						.header("X-Member-Uuid", MEMBER_UUID)
+						.header("X-Auth-User-Id", MEMBER_UUID)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -90,7 +90,7 @@ class CommentReportCommandControllerIntegrationTests {
 	@Test
 	void rejectsMissingReportType() throws Exception {
 		mockMvc.perform(post("/api/planwith-fo-report/reports/comments/" + COMMENT_UUID)
-						.header("X-Member-Uuid", MEMBER_UUID)
+						.header("X-Auth-User-Id", MEMBER_UUID)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("{}"))
 				.andExpect(status().isBadRequest())
@@ -108,7 +108,7 @@ class CommentReportCommandControllerIntegrationTests {
 		);
 
 		mockMvc.perform(post("/api/planwith-fo-report/reports/comments/" + COMMENT_UUID)
-						.header("X-Member-Uuid", otherMemberUuid)
+						.header("X-Auth-User-Id", otherMemberUuid)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -130,7 +130,7 @@ class CommentReportCommandControllerIntegrationTests {
 				.willReturn(Optional.empty());
 
 		mockMvc.perform(post("/api/planwith-fo-report/reports/comments/" + COMMENT_UUID)
-						.header("X-Member-Uuid", MEMBER_UUID)
+						.header("X-Auth-User-Id", MEMBER_UUID)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -147,7 +147,7 @@ class CommentReportCommandControllerIntegrationTests {
 				.willReturn(Optional.of(CommentReportContext.of(COMMENT_UUID, AUTHOR_UUID, false)));
 
 		mockMvc.perform(post("/api/planwith-fo-report/reports/comments/" + COMMENT_UUID)
-						.header("X-Member-Uuid", MEMBER_UUID)
+						.header("X-Auth-User-Id", MEMBER_UUID)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -164,7 +164,7 @@ class CommentReportCommandControllerIntegrationTests {
 				.willReturn(Optional.of(CommentReportContext.of(COMMENT_UUID, AUTHOR_UUID, true)));
 
 		mockMvc.perform(post("/api/planwith-fo-report/reports/comments/" + COMMENT_UUID)
-						.header("X-Member-Uuid", AUTHOR_UUID)
+						.header("X-Auth-User-Id", AUTHOR_UUID)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -178,7 +178,7 @@ class CommentReportCommandControllerIntegrationTests {
 	@Test
 	void rejectsInvalidReportType() throws Exception {
 		mockMvc.perform(post("/api/planwith-fo-report/reports/comments/" + COMMENT_UUID)
-						.header("X-Member-Uuid", MEMBER_UUID)
+						.header("X-Auth-User-Id", MEMBER_UUID)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -195,7 +195,7 @@ class CommentReportCommandControllerIntegrationTests {
 				.willThrow(new CommentServiceUnavailableException());
 
 		mockMvc.perform(post("/api/planwith-fo-report/reports/comments/" + COMMENT_UUID)
-						.header("X-Member-Uuid", MEMBER_UUID)
+						.header("X-Auth-User-Id", MEMBER_UUID)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -215,7 +215,7 @@ class CommentReportCommandControllerIntegrationTests {
 		);
 
 		mockMvc.perform(post("/api/planwith-fo-report/reports/comments/" + COMMENT_UUID)
-						.header("X-Member-Uuid", MEMBER_UUID)
+						.header("X-Auth-User-Id", MEMBER_UUID)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -236,7 +236,7 @@ class CommentReportCommandControllerIntegrationTests {
 		storyCommentReportRepository.save(StoryCommentReport.create(COMMENT_UUID, memberB, ReportType.HATE));
 
 		mockMvc.perform(post("/api/planwith-fo-report/reports/comments/" + COMMENT_UUID)
-						.header("X-Member-Uuid", memberC)
+						.header("X-Auth-User-Id", memberC)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -274,7 +274,7 @@ class CommentReportCommandControllerIntegrationTests {
 		storyCommentReportRepository.save(StoryCommentReport.create(COMMENT_UUID, memberC, ReportType.ABUSE));
 
 		mockMvc.perform(post("/api/planwith-fo-report/reports/comments/" + COMMENT_UUID)
-						.header("X-Member-Uuid", memberD)
+						.header("X-Auth-User-Id", memberD)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{

@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "comment-report-input", description = "댓글 신고 입력 검증 API")
 public class CommentReportInputController {
 
-	static final String MEMBER_UUID_HEADER = "X-Member-Uuid";
+	static final String MEMBER_UUID_HEADER = "X-Auth-User-Id";
 
 	private final ValidateCommentReportInputUseCase validateCommentReportInputUseCase;
 
@@ -37,7 +37,7 @@ public class CommentReportInputController {
 	@PostMapping("/input-validation")
 	@Operation(
 			summary = "댓글 신고 입력 검증",
-			description = "commentUuid, reportType을 검증하고 로그인 회원은 X-Member-Uuid에서 획득한 뒤 신고 대상 확인으로 전달한다."
+			description = "commentUuid, reportType을 검증하고 로그인 회원은 X-Auth-User-Id에서 획득한 뒤 신고 대상 확인으로 전달한다."
 	)
 	public ResponseEntity<CommentReportInputResponse> validateInput(
 			@RequestHeader(value = MEMBER_UUID_HEADER, required = false) UUID memberUuid,
